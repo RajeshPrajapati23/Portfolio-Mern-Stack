@@ -16,7 +16,13 @@ const projectAdd = async (req, res) => {
 
   console.log(file, "file");
   try {
-    let image = await uploadToCloudinary(file.path);
+    // let image = await uploadToCloudinary(file.path);
+    const image = await uploadToCloudinary(
+      file.buffer,
+      file.originalname,
+      undefined,
+      undefined
+    );
 
     const project = await Project.create({
       title,
@@ -25,14 +31,14 @@ const projectAdd = async (req, res) => {
     });
     // await project.save();
     console.log("project", project);
-    // fs.promises.unlink(file.path);
-    fs.unlink(file.path, (err) => {
-      if (err) {
-        console.error(`Failed to delete file ${file.path}:`, err);
-        return res.status(500).send("Failed to delete file after error.");
-      }
-      console.log("File deleted from local");
-    });
+
+    // fs.unlink(file.path, (err) => {
+    //   if (err) {
+    //     console.error(`Failed to delete file ${file.path}:`, err);
+    //     return res.status(500).send("Failed to delete file after error.");
+    //   }
+    //   console.log("File deleted from local");
+    // });
 
     res
       .status(200)
@@ -92,13 +98,21 @@ export const editProject = async (req, res) => {
       .json({ msg: "All Fields are required", succ: false });
   }
   let project = await Project.findById(id);
+  console.log("project", project);
+
   if (!project) {
     return res.status(404).json({ msg: "Project not found", succ: false });
   }
 
   if (file) {
-    let image = await uploadToCloudinary(
-      file.path,
+    // let image = await uploadToCloudinary(
+    //   file.path,
+    //   undefined,
+    //   project.public_id
+    // );
+    const image = await uploadToCloudinary(
+      file.buffer,
+      file.originalname,
       undefined,
       project.public_id
     );

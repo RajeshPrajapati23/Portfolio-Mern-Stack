@@ -10,7 +10,8 @@ cloudinary.config({
 });
 
 const uploadToCloudinary = async (
-  path,
+  fileBuffer,
+  filename,
   folder = "portfolio-image",
   oldPublicId = null
 ) => {
@@ -18,39 +19,74 @@ const uploadToCloudinary = async (
     if (oldPublicId) {
       await cloudinary.uploader.destroy(oldPublicId);
     }
-    console.log("folder in cld", folder);
 
-    const data = await cloudinary.uploader.upload(path, {
-      folder,
-      transformation: [
-        { width: 800, height: 600, crop: "fit" },
-        { quality: "auto", fetch_format: "auto" },
-      ],
+    const data = await new Promise((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          {
+            folder,
+            transformation: [
+              { width: 800, height: 600, crop: "fit" },
+              { quality: "auto", fetch_format: "auto" },
+            ],
+          },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          }
+        )
+        .end(fileBuffer);
     });
+
     return { url: data.secure_url, public_id: data.public_id };
   } catch (err) {
     console.error(err);
     throw new Error("Failed to upload image");
   }
-
-  // Optimize delivery by resizing and applying auto-format and auto-quality
-  // const optimizeUrl = cloudinary.url("shoes", {
-  //   fetch_format: "auto",
-  //   quality: "auto",
-  // });
-
-  // console.log(optimizeUrl);
-
-  // Transform the image: auto-crop to square aspect_ratio
-  // const autoCropUrl = cloudinary.url("shoes", {
-  //   crop: "auto",
-  //   gravity: "auto",
-  //   width: 500,
-  //   height: 500,
-  // });
-
-  // console.log(autoCropUrl);
-
-  // res.send("File uploaded successfully");
 };
+
+// const uploadToCloudinary = async (
+//   path,
+//   folder = "portfolio-image",
+//   oldPublicId = null
+// ) => {
+//   try {
+//     if (oldPublicId) {
+//       await cloudinary.uploader.destroy(oldPublicId);
+//     }
+//     console.log("folder in cld", folder);
+
+//     const data = await cloudinary.uploader.upload(path, {
+//       folder,
+//       transformation: [
+//         { width: 800, height: 600, crop: "fit" },
+//         { quality: "auto", fetch_format: "auto" },
+//       ],
+//     });
+//     return { url: data.secure_url, public_id: data.public_id };
+//   } catch (err) {
+//     console.error(err);
+//     throw new Error("Failed to upload image");
+//   }
+
+//   // Optimize delivery by resizing and applying auto-format and auto-quality
+//   // const optimizeUrl = cloudinary.url("shoes", {
+//   //   fetch_format: "auto",
+//   //   quality: "auto",
+//   // });
+
+//   // console.log(optimizeUrl);
+
+//   // Transform the image: auto-crop to square aspect_ratio
+//   // const autoCropUrl = cloudinary.url("shoes", {
+//   //   crop: "auto",
+//   //   gravity: "auto",
+//   //   width: 500,
+//   //   height: 500,
+//   // });
+
+//   // console.log(autoCropUrl);
+
+//   // res.send("File uploaded successfully");
+// };
 export { uploadToCloudinary, cloudinary };
