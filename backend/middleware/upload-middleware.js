@@ -7,7 +7,8 @@ const _dirname = dirname(filename);
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, join(_dirname, "..", "uploads"));
+    cb(null, join(_dirname, "..", "temp"));
+    // cb(null, "/tmp");
   },
   filename: function (req, file, cb) {
     cb(
