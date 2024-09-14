@@ -9,8 +9,8 @@ import {
 
 const router = express.Router();
 
-router.post("/add", upload.single("file"), projectAdd);
+router.post("/add", projectAdd);
 router.get("/get", getProject);
 router.delete("/delete/:id", deletProject);
-router.put("/update", upload.single("file"), editProject);
+router.put("/update", editProject);
 export default router;

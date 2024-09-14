@@ -10,34 +10,23 @@ cloudinary.config({
 });
 
 const uploadToCloudinary = async (
-  fileBuffer,
-  filename,
-  folder = "portfolio-image",
-  oldPublicId = null
+  base64,
+  oldPublicId = null,
+  folder = "portfolio-image"
 ) => {
   try {
     if (oldPublicId) {
       await cloudinary.uploader.destroy(oldPublicId);
     }
+    console.log("folder in cld", folder);
 
-    const data = await new Promise((resolve, reject) => {
-      cloudinary.uploader
-        .upload_stream(
-          {
-            folder,
-            transformation: [
-              { width: 800, height: 600, crop: "fit" },
-              { quality: "auto", fetch_format: "auto" },
-            ],
-          },
-          (error, result) => {
-            if (error) return reject(error);
-            resolve(result);
-          }
-        )
-        .end(fileBuffer);
+    const data = await cloudinary.uploader.upload(base64, {
+      folder,
+      transformation: [
+        { width: 800, height: 600, crop: "fit" },
+        { quality: "auto", fetch_format: "auto" },
+      ],
     });
-
     return { url: data.secure_url, public_id: data.public_id };
   } catch (err) {
     console.error(err);
@@ -46,7 +35,8 @@ const uploadToCloudinary = async (
 };
 
 // const uploadToCloudinary = async (
-//   path,
+//   fileBuffer,
+//   filename,
 //   folder = "portfolio-image",
 //   oldPublicId = null
 // ) => {
@@ -54,20 +44,31 @@ const uploadToCloudinary = async (
 //     if (oldPublicId) {
 //       await cloudinary.uploader.destroy(oldPublicId);
 //     }
-//     console.log("folder in cld", folder);
 
-//     const data = await cloudinary.uploader.upload(path, {
-//       folder,
-//       transformation: [
-//         { width: 800, height: 600, crop: "fit" },
-//         { quality: "auto", fetch_format: "auto" },
-//       ],
+//     const data = await new Promise((resolve, reject) => {
+//       cloudinary.uploader
+//         .upload_stream(
+//           {
+//             folder,
+//             transformation: [
+//               { width: 800, height: 600, crop: "fit" },
+//               { quality: "auto", fetch_format: "auto" },
+//             ],
+//           },
+//           (error, result) => {
+//             if (error) return reject(error);
+//             resolve(result);
+//           }
+//         )
+//         .end(fileBuffer);
 //     });
+
 //     return { url: data.secure_url, public_id: data.public_id };
 //   } catch (err) {
 //     console.error(err);
 //     throw new Error("Failed to upload image");
 //   }
+// };
 
 //   // Optimize delivery by resizing and applying auto-format and auto-quality
 //   // const optimizeUrl = cloudinary.url("shoes", {

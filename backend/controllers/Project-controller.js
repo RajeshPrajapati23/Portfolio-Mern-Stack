@@ -7,27 +7,23 @@ import jwt from "jsonwebtoken";
 const { JWTKEY } = process.env;
 
 const projectAdd = async (req, res) => {
-  const { title, description } = req.body;
-  const file = req.file;
-  if (!title || !description || !file) {
+  const { title, description, base64, portfolioUrl } = req.body;
+  console.log(req.body);
+  console.log(title, description, base64);
+
+  if (!title || !description || !base64 || !portfolioUrl) {
     res.status(400).json({ msg: "All Fields are required", succ: false });
     return;
   }
 
-  console.log(file, "file");
   try {
-    // let image = await uploadToCloudinary(file.path);
-    const image = await uploadToCloudinary(
-      file.buffer,
-      file.originalname,
-      undefined,
-      undefined
-    );
+    const image = await uploadToCloudinary(base64);
 
     const project = await Project.create({
       title,
       description,
       image,
+      portfolioUrl,
     });
     // await project.save();
     console.log("project", project);
@@ -90,42 +86,29 @@ export const deletProject = async (req, res) => {
 };
 
 export const editProject = async (req, res) => {
-  const { title, description, id } = req.body;
-  const file = req.file;
-  if (!title || !description || !id) {
+  const { title, description, id, base64, portfolioUrl } = req.body;
+
+  if (!title || !description || !id || !portfolioUrl) {
     return res
       .status(400)
       .json({ msg: "All Fields are required", succ: false });
   }
   let project = await Project.findById(id);
-  console.log("project", project);
 
   if (!project) {
     return res.status(404).json({ msg: "Project not found", succ: false });
   }
-
-  if (file) {
-    // let image = await uploadToCloudinary(
-    //   file.path,
-    //   undefined,
-    //   project.public_id
-    // );
-    const image = await uploadToCloudinary(
-      file.buffer,
-      file.originalname,
-      undefined,
-      project.public_id
-    );
+  if (base64) {
+    const image = await uploadToCloudinary(base64, project.image.public_id);
     project.image = image;
   }
   project.title = title;
   project.description = description;
+  project.portfolioUrl = portfolioUrl;
   await project.save();
   console.log("Project updated successfully", project);
   return res
     .status(200)
     .json({ msg: "project updated successfully", project, succ: false });
-
-  // let image = await uploadToCloudinary(file.path, _);
 };
 export { projectAdd };
